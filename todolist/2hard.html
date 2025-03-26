@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset='utf-8'>
+    <meta http-equiv='X-UA-Compatible' content='IE=edge'>
+    <title>Page Title</title>
+    <meta name='viewport' content='width=device-width, initial-scale=1'>
+    <link rel='stylesheet' type='text/css' media='screen' href='main.css'>
+    <script src='main.js'></script>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #e9ecef;
+            text-align: center;
+            padding: 40px;
+            margin: 0;
+        }
+
+        #body {
+            background: white;
+            padding: 40px;
+            max-width: 500px;
+            margin: 0 auto;
+            border-radius: 15px;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            font-size: 24px;
+            color: #333;
+            margin-bottom: 20px;
+            font-weight: bold;
+        }
+
+        input[type="text"],
+        input[type="date"] {
+            width: 100%;
+            padding: 12px 15px;
+            margin: 10px 0;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            box-sizing: border-box;
+        }
+
+        button {
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            margin: 5px;
+            cursor: pointer;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        #inner {
+            margin-top: 30px;
+        }
+
+        div.todo-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: #fff;
+            padding: 12px;
+            margin-top: 10px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: box-shadow 0.3s ease;
+        }
+
+        div.todo-item:hover {
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        p {
+            margin: 0;
+            flex: 1;
+            color: #555;
+        }
+
+        .filter-buttons {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+        }
+
+        .filter-buttons button {
+            background-color: #28a745;
+            padding: 10px 18px;
+            margin: 0 5px;
+        }
+
+        .filter-buttons button:hover {
+            background-color: #218838;
+        }
+
+        .filter-buttons button:focus {
+            outline: none;
+            box-shadow: 0 0 5px rgba(40, 167, 69, 0.5);
+        }
+    </style>
+
+</head>
+
+<body>
+    <div id="body">
+        <h1>할 일 목록</h1>
+        <input type="text" name="" id="to">
+        <input type="date" name="" id="to1">
+        <button id="getget">등록</button>
+        <div>
+            <button id="comp1">전체</button>
+            <button id="comp2">활성</button>
+            <button id="comp3">완료</button>
+        </div>
+        <div id="inner">
+
+        </div>
+
+    </div>
+
+    // 1. 프로세스에 대한 폼이 무거워지고 정리가 안됨
+    // 1-1 자원관리 안됨
+    // 2. 객체에 대한 변경이 최소화
+    // 3. 방향은 맞는데 너무 감각에 의존
+
+    // -- 처방 --
+    // 1. pesudo 코드 작성
+    // 2. 자주 쓰는 공통 코드에 대한 정의 및 선언
+
+    
+
+    <script>
+        const inner = document.getElementById("inner");
+        let todoList = []; // 할 일 목록을 저장할 배열
+
+        document.getElementById("getget").addEventListener("click", function () {
+            const inget = document.getElementById("to").value;
+            const getdate = document.getElementById("to1").value;
+            console.log(getdate);
+
+            const two = document.createElement("div");
+            // 할 일의 상태 추가 (활성, 완료)
+            const todoItem = {
+                text: inget,
+                date: getdate,
+                status: "active" // 기본 상태는 활성
+            };
+
+
+            // inner 안 two안에 들어갈 체크박스, 할일과 날짜 넣을 공란, 수정, 삭제 버튼 추가
+            const chk = document.createElement("input");
+            chk.type = "checkbox";
+
+            const inp = document.createElement("p");
+            inp.textContent = `${inget} (마감 : ${getdate})`;
+
+            const butre = document.createElement("button");
+            butre.textContent = "수정";
+
+            const butbe = document.createElement("button");
+            butbe.textContent = "삭제";
+
+
+
+            // 체크박스 클릭 시 상태 변경 (활성 -> 완료)
+            chk.addEventListener("click", function () {
+                if (chk.checked) {
+                    todoItem.status = "completed"; // 완료로 상태 변경
+                    inp.style.textDecoration = "line-through"; // 가로줄 추가
+                    inp.style.opacity = "0.6"; // 텍스트 흐리게 처리
+                } else {
+                    todoItem.status = "active"; // 다시 활성으로 상태 변경
+                    inp.style.textDecoration = "none"; // 가로줄 제거
+                    inp.style.opacity = "1"; // 텍스트 흐림 제거
+                }
+                filterTodos(currentFilter); // 필터 상태에 맞게 할 일 목록을 갱신
+            });
+
+            // 수정 버튼 클릭 시 실행되는 함수
+            butre.addEventListener("click", function () {
+                const inputField = document.createElement("input");
+                inputField.type = "text";
+                inputField.value = inp.textContent.replace(" (마감 : " + getdate + ")", ""); // 기존 텍스트에서 마감 날짜를 제외한 할일만 가져오기
+
+                // 수정 버튼을 '저장' 버튼으로 변경
+                butre.textContent = "저장";
+
+                butre.addEventListener("click", function () {
+                    inp.textContent = `${inputField.value} (마감 : ${getdate})`; // 수정된 텍스트로 업데이트
+                    two.replaceChild(inp, inputField); // 입력 필드를 기존의 p 태그로 바꿈
+                    butre.textContent = "수정"; // 다시 수정 버튼으로 변경
+                    todoItem.text = inputField.value; // 텍스트 업데이트
+                });
+
+                two.replaceChild(inputField, inp); // p 태그를 입력 필드로 바꿈
+            });
+
+            // 삭제 버튼 클릭 시 실행되는 함수
+            butbe.addEventListener("click", function () {
+                inner.removeChild(two); // 해당 할일 삭제
+                todoList = todoList.filter(item => item !== todoItem); // 목록에서 해당 항목 삭제
+                filterTodos(currentFilter); // 필터 상태에 맞게 할 일 목록을 갱신
+            });
+
+            two.appendChild(chk);
+            two.appendChild(inp);
+            two.appendChild(butre);
+            two.appendChild(butbe);
+            inner.appendChild(two);
+
+            // 할 일 목록에 추가
+            todoList.push(todoItem);
+        });
+
+
+        // 필터 상태를 추적할 변수
+        let currentFilter = "all";
+
+
+
+        // 필터링 함수
+        function filterTodos(filter) {
+            inner.innerHTML = ""; // 기존 목록 지우기
+
+            // 필터링된 목록만 표시
+            const filteredTodos = todoList.filter(todo => {
+                if (filter === "all") return true;
+                if (filter === "active" && todo.status === "active") return true;
+                if (filter === "completed" && todo.status === "completed") return true;
+                return false;
+            });
+
+            // 필터링된 목록을 화면에 표시
+            filteredTodos.forEach(todo => {
+                const two = document.createElement("div");
+                const chk = document.createElement("input");
+                chk.type = "checkbox";
+                chk.checked = todo.status === "completed"; // 완료된 항목은 체크
+                const inp = document.createElement("p");
+                inp.textContent = `${todo.text} (마감 : ${todo.date})`;
+
+                const butre = document.createElement("button");
+                butre.textContent = "수정";
+
+                const butbe = document.createElement("button");
+                butbe.textContent = "삭제";
+
+
+
+                // 체크박스 클릭 시 상태 변경 (활성 -> 완료)
+                chk.addEventListener("click", function () {
+                    if (chk.checked) {
+                        todo.status = "completed";
+
+                    } else {
+                        todo.status = "active";
+
+                    }
+                    filterTodos(currentFilter); // 필터 상태에 맞게 할 일 목록을 갱신
+                });
+
+
+
+
+                // 수정 버튼 클릭 시 실행되는 함수
+                butre.addEventListener("click", function () {
+                    const inputField = document.createElement("input");
+                    inputField.type = "text";
+                    inputField.value = inp.textContent.replace(" (마감 : " + todo.date + ")", "");
+
+                    butre.textContent = "저장";
+
+                    butre.addEventListener("click", function () {
+                        inp.textContent = `${inputField.value} (마감 : ${todo.date})`;
+                        two.replaceChild(inp, inputField);
+                        butre.textContent = "수정";
+                        todo.text = inputField.value;
+                    });
+
+                    two.replaceChild(inputField, inp);
+                });
+
+
+
+
+                // 삭제 버튼 클릭 시 실행되는 함수
+                butbe.addEventListener("click", function () {
+                    inner.removeChild(two);
+                    todoList = todoList.filter(item => item !== todo); // 목록에서 해당 항목 삭제
+                    filterTodos(currentFilter); // 필터 상태에 맞게 할 일 목록을 갱신
+                });
+
+                two.appendChild(chk);
+                two.appendChild(inp);
+                two.appendChild(butre);
+                two.appendChild(butbe);
+                inner.appendChild(two);
+            });
+        }
+
+        // 필터 버튼 클릭 시 필터 상태를 업데이트
+        document.getElementById("comp1").addEventListener("click", function () {
+            currentFilter = "all";
+            filterTodos(currentFilter);
+        });
+
+        document.getElementById("comp2").addEventListener("click", function () {
+            currentFilter = "active";
+            filterTodos(currentFilter);
+        });
+
+        document.getElementById("comp3").addEventListener("click", function () {
+            currentFilter = "completed";
+            filterTodos(currentFilter);
+        });
+
+    </script>
+</body>
+
+</html>

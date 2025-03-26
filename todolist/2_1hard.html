@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>할 일 목록</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <h1>할 일 목록</h1>
+        <div class="todo-input">
+            <input type="text" id="todo-text" placeholder="할 일을 입력하세요">
+            <input type="date" id="todo-date">
+            <button id="add-todo">추가</button>
+        </div>
+        <div class="filter-buttons">
+            <button id="filter-all">전체</button>
+            <button id="filter-active">활성</button>
+            <button id="filter-completed">완료</button>
+        </div>
+        <ul id="todo-list"></ul>
+    </div>
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const todoInput = document.getElementById("todo-text");
+            const todoDate = document.getElementById("todo-date");
+            const addTodoBtn = document.getElementById("add-todo");
+            const todoList = document.getElementById("todo-list");
+            const filterAll = document.getElementById("filter-all");
+            const filterActive = document.getElementById("filter-active");
+            const filterCompleted = document.getElementById("filter-completed");
+
+            let todos = [];
+
+            addTodoBtn.addEventListener("click", () => {
+                const text = todoInput.value.trim();
+                const date = todoDate.value;
+                if (!text) {
+                    alert("할 일을 입력하세요.");
+                    return;
+                }
+                const newTodo = { id: Date.now(), text, date, completed: false };
+                todos.push(newTodo);
+                renderTodos();
+                todoInput.value = "";
+                todoDate.value = "";
+            });
+
+            function renderTodos(filter = "all") {
+                todoList.innerHTML = "";
+                const filteredTodos = todos.filter(todo => {
+                    if (filter === "active") return !todo.completed;
+                    if (filter === "completed") return todo.completed;
+                    return true;
+                });
+
+                filteredTodos.forEach(todo => {
+                    const li = document.createElement("li");
+                    li.classList.add("todo-item");
+                    if (todo.completed) li.classList.add("completed");
+                    
+                    const checkbox = document.createElement("input");
+                    checkbox.type = "checkbox";
+                    checkbox.checked = todo.completed;
+                    checkbox.addEventListener("change", () => {
+                        todo.completed = !todo.completed;
+                        renderTodos();
+                    });
+                    
+                    const span = document.createElement("span");
+                    span.textContent = `${todo.text} (${todo.date})`;
+                    
+                    const editButton = document.createElement("button");
+                    editButton.textContent = "Edit";
+                    editButton.addEventListener("click", () => {
+                        const editInput = document.createElement("input");
+                        editInput.type = "text";
+                        editInput.value = todo.text;
+                        
+                        const saveButton = document.createElement("button");
+                        saveButton.textContent = "Save";
+                        saveButton.addEventListener("click", () => {
+                            if (editInput.value.trim()) {
+                                todo.text = editInput.value.trim();
+                                renderTodos();
+                            }
+                        });
+                        
+                        li.innerHTML = "";
+                        li.appendChild(editInput);
+                        li.appendChild(saveButton);
+                    });
+                    
+                    const deleteButton = document.createElement("button");
+                    deleteButton.textContent = "Delete";
+                    deleteButton.addEventListener("click", () => {
+                        todos = todos.filter(t => t.id !== todo.id);
+                        renderTodos();
+                    });
+                    
+                    li.appendChild(checkbox);
+                    li.appendChild(span);
+                    li.appendChild(editButton);
+                    li.appendChild(deleteButton);
+                    todoList.appendChild(li);
+                });
+            }
+
+            filterAll.addEventListener("click", () => renderTodos("all"));
+            filterActive.addEventListener("click", () => renderTodos("active"));
+            filterCompleted.addEventListener("click", () => renderTodos("completed"));
+            
+            renderTodos();
+        });
+    </script>
+</body>
+</html>

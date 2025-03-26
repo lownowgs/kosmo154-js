@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>할 일 목록</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <h1>할 일 목록</h1>
+        <div class="todo-input">
+            <!-- 할 일 입력 필드 및 추가 버튼 -->
+            <input type="text" id="todo-text" placeholder="할 일을 입력하세요">
+            <input type="date" id="todo-date">
+            <button id="add-todo">추가</button>
+        </div>
+        
+        <!-- 필터 버튼 (전체, 활성, 완료) -->
+        <div class="filter-buttons">
+            <button id="filter-all">전체</button>
+            <button id="filter-active">활성</button>
+            <button id="filter-completed">완료</button>
+        </div>
+        
+        <!-- 할 일 목록이 표시될 영역 -->
+        <ul id="todo-list"></ul>
+    </div>
+    
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            // 요소 가져오기
+            const todoInput = document.getElementById("todo-text");
+            const todoDate = document.getElementById("todo-date");
+            const addTodoBtn = document.getElementById("add-todo");
+            const todoList = document.getElementById("todo-list");
+            const filterAll = document.getElementById("filter-all");
+            const filterActive = document.getElementById("filter-active");
+            const filterCompleted = document.getElementById("filter-completed");
+
+            let todos = []; // 할 일 목록을 저장할 배열
+
+            // 할 일 추가 이벤트 리스너
+            addTodoBtn.addEventListener("click", () => {
+                const text = todoInput.value.trim(); // 입력값 공백 제거
+                const date = todoDate.value;
+
+                if (!text) {
+                    alert("할 일을 입력하세요."); // 입력값이 없을 경우 경고창 띄움
+                    return;
+                }
+
+                // 새로운 할 일 객체 생성
+                const newTodo = { id: Date.now(), text, date, completed: false };
+                
+                todos.push(newTodo); // 배열에 추가
+                
+                renderTodos(); // 화면 갱신
+                
+                // 입력 필드 초기화
+                todoInput.value = "";
+                todoDate.value = "";
+            });
+
+            // 할 일 목록 렌더링 함수
+            function renderTodos(filter = "all") {
+                todoList.innerHTML = ""; // 기존 목록 초기화
+                
+                // 필터링된 목록 생성
+                const filteredTodos = todos.filter(todo => {
+                    if (filter === "active") return !todo.completed;
+                    if (filter === "completed") return todo.completed;
+                    return true;
+                });
+
+                // 필터링된 할 일 목록을 화면에 추가
+                filteredTodos.forEach(todo => {
+                    const li = document.createElement("li");
+                    li.classList.add("todo-item");
+                    if (todo.completed) li.classList.add("completed");
+                    
+                    // 체크박스 생성 및 이벤트 추가
+                    const checkbox = document.createElement("input");
+                    checkbox.type = "checkbox";
+                    checkbox.checked = todo.completed;
+                    checkbox.addEventListener("change", () => {
+                        todo.completed = !todo.completed;
+                        renderTodos();
+                    });
+                    
+                    // 할 일 텍스트 표시
+                    const span = document.createElement("span");
+                    span.textContent = `${todo.text} (${todo.date})`;
+                    
+                    // 수정 버튼 생성 및 이벤트 추가
+                    const editButton = document.createElement("button");
+                    editButton.textContent = "Edit";
+                    editButton.addEventListener("click", () => {
+                        const editInput = document.createElement("input");
+                        editInput.type = "text";
+                        editInput.value = todo.text;
+                        
+                        const saveButton = document.createElement("button");
+                        saveButton.textContent = "Save";
+                        saveButton.addEventListener("click", () => {
+                            if (editInput.value.trim()) {
+                                todo.text = editInput.value.trim();
+                                renderTodos();
+                            }
+                        });
+                        
+                        // 수정 UI로 변경
+                        li.innerHTML = "";
+                        li.appendChild(editInput);
+                        li.appendChild(saveButton);
+                    });
+                    
+                    // 삭제 버튼 생성 및 이벤트 추가
+                    const deleteButton = document.createElement("button");
+                    deleteButton.textContent = "Delete";
+                    deleteButton.addEventListener("click", () => {
+                        todos = todos.filter(t => t.id !== todo.id);
+                        renderTodos();
+                    });
+                    
+                    // 요소들을 li에 추가
+                    li.appendChild(checkbox);
+                    li.appendChild(span);
+                    li.appendChild(editButton);
+                    li.appendChild(deleteButton);
+                    
+                    // ul에 추가
+                    todoList.appendChild(li);
+                });
+            }
+
+            // 필터 버튼 이벤트 리스너 추가
+            filterAll.addEventListener("click", () => renderTodos("all"));
+            filterActive.addEventListener("click", () => renderTodos("active"));
+            filterCompleted.addEventListener("click", () => renderTodos("completed"));
+            
+            renderTodos(); // 초기 목록 렌더링
+        });
+    </script>
+</body>
+</html>

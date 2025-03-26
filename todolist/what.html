@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>할 일 목록</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <h1>할 일 목록</h1>
+        <div class="todo-input">
+            <input type="text" id="todo-text" placeholder="할 일을 입력하세요">
+            <input type="date" id="todo-date">
+            <button id="add-todo">추가</button>
+        </div>
+        <div class="filter-buttons">
+            <button id="filter-all">전체</button>
+            <button id="filter-active">활성</button>
+            <button id="filter-completed">완료</button>
+        </div>
+        <ul id="todo-list"></ul>
+    </div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+      // --- DOM 요소 캐싱 ---
+      const todoInput = document.getElementById("todo-text");
+      const todoDate = document.getElementById("todo-date");
+      const addTodoBtn = document.getElementById("add-todo");
+      const todoList = document.getElementById("todo-list");
+      const filterAllBtn = document.getElementById("filter-all");
+      const filterActiveBtn = document.getElementById("filter-active");
+      const filterCompletedBtn = document.getElementById("filter-completed");
+     
+      // --- 상태 관리 ---
+      let todos = []; // 할 일 목록
+      let currentFilter = "all";
+     
+      // --- 헬퍼 함수 ---
+      const clearInputs = () => {
+        todoInput.value = "";
+        todoDate.value = "";
+      };
+     
+      // --- 할 일 추가 ---
+      const addTodo = () => {
+        const text = todoInput.value.trim();
+        const date = todoDate.value;
+     
+        if (!text) {
+          alert("할 일을 입력하세요.");
+          return;
+        }
+     
+        const newTodo = {
+          id: Date.now(),
+          text,
+          date,
+          completed: false
+        };
+     
+        todos.push(newTodo);
+        clearInputs();
+        renderTodos(currentFilter);
+      };
+     
+      // --- 할 일 항목 생성 ---
+      const createTodoElement = (todo) => {
+        const li = document.createElement("li");
+        li.classList.add("todo-item");
+        if (todo.completed) li.classList.add("completed");
+     
+
+        // 체크박스
+        const checkbox = document.createElement("input");
+        checkbox.type = "checkbox";
+        checkbox.checked = todo.completed;
+        checkbox.addEventListener("change", () => {
+          todo.completed = !todo.completed;
+          renderTodos(currentFilter);
+        });
+     
+
+        
+        // 텍스트 표시 (할 일과 날짜)
+        const span = document.createElement("span");
+        span.textContent = `${todo.text} (${todo.date})`;
+     
+        // 편집 버튼 & 편집 모드 전환
+        const editButton = document.createElement("button");
+        editButton.textContent = "Edit";
+        editButton.addEventListener("click", () => enterEditMode(todo, li));
+     
+        // 삭제 버튼
+        const deleteButton = document.createElement("button");
+        deleteButton.textContent = "Delete";
+        deleteButton.addEventListener("click", () => {
+          todos = todos.filter(t => t.id !== todo.id);
+          renderTodos(currentFilter);
+        });
+     
+        li.append(checkbox, span, editButton, deleteButton);
+        return li;
+      };
+     
+      // --- 편집 모드 ---
+      const enterEditMode = (todo, liElement) => {
+        liElement.innerHTML = "";
+        const editInput = document.createElement("input");
+        editInput.type = "text";
+        editInput.value = todo.text;
+     
+        const saveButton = document.createElement("button");
+        saveButton.textContent = "Save";
+        saveButton.addEventListener("click", () => {
+          const updatedText = editInput.value.trim();
+          if (updatedText) {
+            todo.text = updatedText;
+            renderTodos(currentFilter);
+          }
+        });
+     
+        liElement.append(editInput, saveButton);
+      };
+     
+      // --- 할 일 렌더링 ---
+      const renderTodos = (filter = "all") => {
+        currentFilter = filter;
+        todoList.innerHTML = "";
+     
+        const filteredTodos = todos.filter(todo => {
+          if (filter === "active") return !todo.completed;
+          if (filter === "completed") return todo.completed;
+          return true;
+        });
+     
+        filteredTodos.forEach(todo => {
+          const todoElement = createTodoElement(todo);
+          todoList.appendChild(todoElement);
+        });
+      };
+     
+      // --- 이벤트 리스너 등록 ---
+      addTodoBtn.addEventListener("click", addTodo);
+      filterAllBtn.addEventListener("click", () => renderTodos("all"));
+      filterActiveBtn.addEventListener("click", () => renderTodos("active"));
+      filterCompletedBtn.addEventListener("click", () => renderTodos("completed"));
+     
+      // 초기 렌더링
+      renderTodos();
+    });
+    </script>
+
+
+</body>
+</html>

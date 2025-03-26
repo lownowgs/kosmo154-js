@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>할 일 목록</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <h1>할 일 목록</h1>
+        <div class="todo-input">
+            <input type="text" id="todo-text" placeholder="할 일을 입력하세요">
+            <input type="date" id="todo-date">
+            <button id="add-todo">추가</button>
+        </div>
+        <div class="filter-buttons">
+            <button id="filter-all">전체</button>
+            <button id="filter-active">활성</button>
+            <button id="filter-completed">완료</button>
+        </div>
+        <ul id="todo-list">
+
+        </ul>
+    </div>
+    <script>
+
+        // document.getElementById("add-todo").addEventListener("click",function(){
+
+        // })
+
+
+        document.addEventListener("DOMContentLoaded", () => {
+    const todoInput = document.getElementById("todo-text");
+    const todoDate = document.getElementById("todo-date");
+    const addTodoBtn = document.getElementById("add-todo");
+    const todoList = document.getElementById("todo-list");
+    const filterAll = document.getElementById("filter-all");
+    const filterActive = document.getElementById("filter-active");
+    const filterCompleted = document.getElementById("filter-completed");
+
+    let todos = [];
+
+    // 할 일 추가 기능
+    addTodoBtn.addEventListener("click", () => {
+        const text = todoInput.value.trim();
+        const date = todoDate.value;
+        
+        if (!text) {
+            alert("할 일을 입력하세요.");
+            return;
+        }
+        
+        const newTodo = {
+            id: Date.now(),
+            text,
+            date,
+            completed: false
+        };
+
+        todos.push(newTodo);
+        renderTodos();
+        todoInput.value = "";
+        todoDate.value = "";
+    });
+
+
+
+
+    // 할 일 목록 렌더링 함수
+    function renderTodos(filter = "all") {
+        todoList.innerHTML = "";
+        const filteredTodos = todos.filter(todo => {
+            if (filter === "active") return !todo.completed;
+            if (filter === "completed") return todo.completed;
+            return true;
+        });
+
+        filteredTodos.forEach(todo => {
+            const li = document.createElement("li");
+            li.classList.add("todo-item");
+            if (todo.completed) li.classList.add("completed");
+
+            li.innerHTML = `
+                <input type="checkbox" class="toggle" data-id="${todo.id}" ${todo.completed ? "checked" : ""}>
+                <span class="todo-text">${todo.text}</span>
+                <span class="todo-date">${todo.date || ""}</span>
+                <button class="edit" data-id="${todo.id}">Edit</button>
+                <button class="delete" data-id="${todo.id}">Delete</button>
+            `;
+            
+            todoList.appendChild(li);
+        });
+    }
+
+
+
+
+    // 할 일 완료 여부 토글, 수정, 삭제 이벤트 처리
+    todoList.addEventListener("click", (e) => {
+        const id = Number(e.target.dataset.id);
+        if (e.target.classList.contains("toggle")) {
+            todos = todos.map(todo => todo.id === id ? { ...todo, completed: !todo.completed } : todo);
+        }
+        if (e.target.classList.contains("delete")) {
+            todos = todos.filter(todo => todo.id !== id);
+        }
+        if (e.target.classList.contains("edit")) {
+            const newText = prompt("새로운 할 일을 입력하세요:", todos.find(todo => todo.id === id).text);
+            if (newText) {
+                todos = todos.map(todo => todo.id === id ? { ...todo, text: newText } : todo);
+            }
+        }
+        renderTodos();
+    });
+
+
+
+
+    // 필터 버튼 이벤트 처리
+    filterAll.addEventListener("click", () => renderTodos("all"));
+    filterActive.addEventListener("click", () => renderTodos("active"));
+    filterCompleted.addEventListener("click", () => renderTodos("completed"));
+
+
+
+    // 초기초기초기 렌더링
+    renderTodos();
+});
+
+    </script>
+</body>
+</html>

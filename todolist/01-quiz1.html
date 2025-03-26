@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8"><!-- HTML 문서의 문자 인코딩을 UTF-8로 설정 (한글 지원) -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"><!-- 반응형 웹을 위한 뷰포트 설정 -->
+    <title>할 일 목록 App</title><!-- 브라우저 탭에 표시될 페이지 제목 -->
+    <style>
+        /* -------------------------------------------------- */
+        /*                    CSS 스타일                     */
+        /* -------------------------------------------------- */
+        body {
+            font-family: Arial, sans-serif;
+            /* 페이지 전체에 적용될 글꼴 */
+            background-color: #f2f2f2;
+            /* 페이지 배경색 */
+            margin: 0;
+            /* 기본 여백 제거 */
+            padding: 20px;
+            /* 페이지 내부 여백 */
+        }
+
+        header h1 {
+            text-align: center;
+            /* 제목을 중앙에 배치 */
+            color: #333;
+            /* 제목 글자색 */
+        }
+
+        #task-input,
+        #filters,
+        #task-list {
+            margin: 20px auto;
+            /* 위아래 여백 20px, 좌우 중앙 정렬 */
+            max-width: 500px;
+            /* 영역의 최대 너비 지정 */
+        }
+
+        #task-input input[type="text"],
+        #task-input input[type="date"] {
+            padding: 10px;
+            /* 입력 필드 내 패딩 */
+            font-size: 16px;
+            /* 글자 크기 */
+            width: calc(100% - 22px);
+            /* 전체 너비에서 패딩을 뺀 값 */
+            margin-bottom: 10px;
+            /* 입력 필드 아래에 여백 */
+        }
+
+        #task-input button {
+            padding: 10px 20px;
+            /* 버튼 내부 여백 */
+            font-size: 16px;
+            /* 버튼 글자 크기 */
+            cursor: pointer;
+            /* 마우스 오버 시 커서 포인터 표시 */
+        }
+
+        #filters {
+            text-align: center;
+            /* 필터 버튼들을 중앙에 배치 */
+        }
+
+        .filter-btn {
+            padding: 10px 20px;
+            /* 버튼 내부 여백 */
+            margin: 0 5px;
+            /* 버튼 좌우 여백 */
+            cursor: pointer;
+            /* 클릭 가능한 느낌을 주기 위해 포인터 표시 */
+        }
+
+        .filter-btn.active {
+            background-color: #007BFF;
+            /* 활성 필터의 배경색 */
+            color: white;
+            /* 활성 필터의 글자색 */
+        }
+
+        #task-list {
+            list-style: none;
+            /* 기본 리스트 스타일 제거 */
+            padding: 0;
+            /* 내부 여백 제거 */
+        }
+
+        .task-item {
+            background-color: white;
+            /* 할 일 항목 배경색 */
+            margin: 10px 0;
+            /* 항목 위아래 간격 */
+            padding: 15px;
+            /* 항목 내부 여백 */
+            border-radius: 5px;
+            /* 모서리 둥글게 */
+            display: flex;
+            /* 자식 요소들을 가로로 배치 */
+            justify-content: space-between;
+            /* 좌우 여백 최대 활용하여 배치 */
+            align-items: center;
+            /* 수직 가운데 정렬 */
+            transition: opacity 0.3s ease;
+            /* 부드러운 fade in/out 효과 적용 */
+        }
+
+        .task-item.completed .task-title {
+            text-decoration: line-through;
+            /* 완료된 항목은 취소선 적용 */
+            color: gray;
+            /* 완료된 항목은 글자색 변경 */
+        }
+
+        .task-buttons button {
+            margin-left: 5px;
+            /* 버튼들 사이의 좌측 마진 */
+        }
+    </style>
+</head>
+
+
+<body>
+    <!-- -------------------------------------------------- -->
+    <!--                    HTML 구조                     -->
+    <!-- -------------------------------------------------- -->
+    <header>
+        <h1>할 일 목록</h1> <!-- 페이지 상단 제목 -->
+    </header>
+    <main>
+        <!-- 할 일 입력 영역: 사용자가 새 할 일을 추가할 수 있습니다. -->
+        <section id="task-input">
+            <input type="text" id="task-title" placeholder="할 일을 입력하세요" /><!-- 할 일 제목 입력란 -->
+            <input type="date" id="task-date" /><!-- optional: 마감 날짜 입력란 -->
+            <button id="add-task">등록</button><!-- 새로운 할 일을 추가하는 버튼 -->
+            <div id="error-message" style="color: red;"></div><!-- 에러 메시지 표시 영역 (예: 제목이 빈 경우) -->
+        </section>
+
+        <!-- 필터 영역: 등록된 할 일을 '전체', '활성', '완료' 상태별로 필터링 -->
+        <section id="filters">
+            <button class="filter-btn active" data-filter="all">전체</button>
+            <button class="filter-btn" data-filter="active">활성</button>
+            <button class="filter-btn" data-filter="completed">완료</button>
+        </section>
+
+        <!-- 할 일 목록을 표시하는 영역 -->
+        <ul id="task-list"></ul>
+    </main>
+
+
+
+    <!-- -------------------------------------------------- -->
+    <!--                 JavaScript 코드                  -->
+    <!-- -------------------------------------------------- -->
+    <script>
+        
+        // DOMContentLoaded 이벤트: HTML의 모든 요소가 로드된 후 실행
+        document.addEventListener('DOMContentLoaded', function () {
+            // 로컬 스토리지에서 기존 할 일 데이터를 불러오거나 없으면 빈 배열로 초기화
+            let tasks = loadTasksFromLocalStorage() || [];
+
+            // 현재 선택된 필터 조건을 저장 (기본값은 'all')
+            let currentFilter = 'all';
+
+            // 아래 DOM 요소들을 변수로 할당하여 코드 내에서 재사용합니다.
+            const taskListElement = document.getElementById('task-list');   // 할 일 목록(ul 태그)
+            const addTaskButton = document.getElementById('add-task');      // 할 일 추가 버튼
+            const taskTitleInput = document.getElementById('task-title');     // 할 일 제목 입력 필드
+            const taskDateInput = document.getElementById('task-date');      // 마감 날짜 입력 필드
+            const errorMessageDiv = document.getElementById('error-message');  // 에러 메시지를 표시할 영역
+            const filterButtons = document.querySelectorAll('.filter-btn');   // 필터 버튼들
+
+            /* -------------------------------------------------- */
+            /*       로컬 스토리지 관련 함수들 정의             */
+            /* -------------------------------------------------- */
+
+            /**
+             * 현재 tasks 배열을 JSON 문자열로 변환하여 localStorage에 저장
+             */
+            function saveTasksToLocalStorage() {
+                localStorage.setItem('tasks', JSON.stringify(tasks));
+            }
+
+            /**
+             * localStorage에서 tasks 데이터를 불러와 객체 배열로 반환
+             * 데이터가 없으면 null을 반환하며, 이를 호출하는 쪽에서 처리합니다.
+             */
+            function loadTasksFromLocalStorage() {
+                const tasksFromStorage = localStorage.getItem('tasks');
+                return tasksFromStorage ? JSON.parse(tasksFromStorage) : null;
+            }
+
+            /* -------------------------------------------------- */
+            /*             할 일 목록 렌더링 함수                  */
+            /* -------------------------------------------------- */
+
+            /**
+             * 현재 tasks 배열과 필터 조건(currentFilter)에 따라 할 일 목록을 화면에 렌더링합니다.
+             */
+            function renderTasks() {
+                // 할 일 목록(ul)의 기존 내용을 모두 제거
+                taskListElement.innerHTML = '';
+
+                // 필터 조건에 따라 표시할 할 일 목록을 필터링
+                let filteredTasks = tasks;
+                if (currentFilter === 'active') {
+                    filteredTasks = tasks.filter(task => !task.completed);
+                } else if (currentFilter === 'completed') {
+                    filteredTasks = tasks.filter(task => task.completed);
+                }
+
+                // 필터링된 각 task에 대해 li 요소를 만들어 할 일 목록에 추가합니다.
+                filteredTasks.forEach(task => {
+                    // li 요소 생성 및 기본 클래스 지정
+                    const li = document.createElement('li');
+                    li.className = 'task-item';
+                    if (task.completed) {
+                        // 완료된 할 일이라면 추가적인 스타일 적용을 위해 'completed' 클래스 추가
+                        li.classList.add('completed');
+                    }
+                    // 각 li 요소에 고유 id를 data 속성으로 부여 (이후 이벤트 핸들링 시 사용)
+                    li.setAttribute('data-id', task.id);
+
+                    // --- 왼쪽 영역 (체크박스, 할 일 제목, 마감 날짜) ---
+
+                    // 왼쪽 영역을 담을 컨테이너 div 생성 및 Flexbox 스타일 설정
+                    const leftDiv = document.createElement('div');
+                    leftDiv.style.display = 'flex';
+                    leftDiv.style.alignItems = 'center';
+
+                    // 체크박스 생성: 할 일의 완료 여부 토글용
+                    const checkbox = document.createElement('input');
+                    checkbox.type = 'checkbox';
+                    checkbox.checked = task.completed; // 현재 task 완료 상태 반영
+                    checkbox.className = 'toggle-checkbox';
+                    // 체크박스에도 task id 할당
+                    checkbox.setAttribute('data-id', task.id);
+                    leftDiv.appendChild(checkbox);
+
+                    // 할 일 제목을 표시할 span 요소 생성
+                    const taskSpan = document.createElement('span');
+                    taskSpan.className = 'task-title';
+                    taskSpan.style.marginLeft = '10px';
+
+                    // 만약 task가 편집 모드(isEditing === true)라면,
+                    // input 요소를 생성하여 기존 제목을 편집할 수 있도록 합니다.
+                    if (task.isEditing) {
+                        const editInput = document.createElement('input');
+                        editInput.type = 'text';
+                        editInput.value = task.title; // 기존 제목을 초기 값으로 설정
+                        editInput.className = 'edit-input';
+                        taskSpan.appendChild(editInput);
+                    } else {
+                        // 편집 모드가 아니라면 일반 텍스트로 제목을 표시합니다.
+                        taskSpan.textContent = task.title;
+                    }
+                    leftDiv.appendChild(taskSpan);
+
+                    // 마감 날짜가 있을 경우, 날짜 정보를 텍스트로 추가
+                    if (task.dueDate) {
+                        const dueDateSpan = document.createElement('span');
+                        dueDateSpan.textContent = ' (마감: ' + task.dueDate + ')';
+                        dueDateSpan.style.marginLeft = '10px';
+                        dueDateSpan.style.fontStyle = 'italic';
+                        taskSpan.appendChild(dueDateSpan);
+                    }
+
+                    // 왼쪽 영역을 li 요소에 추가
+                    li.appendChild(leftDiv);
+
+                    // --- 오른쪽 영역 (편집, 저장, 삭제 버튼) ---
+
+                    // 오른쪽 영역용 div 생성
+                    const rightDiv = document.createElement('div');
+                    rightDiv.className = 'task-buttons';
+
+                    // task가 편집 모드가 아닐 경우 'Edit' 버튼 생성
+                    if (!task.isEditing) {
+                        const editButton = document.createElement('button');
+                        editButton.textContent = 'Edit';
+                        editButton.className = 'edit-btn';
+                        editButton.setAttribute('data-id', task.id);
+                        rightDiv.appendChild(editButton);
+                    } else {
+                        // 편집 모드일 경우, 'Save' 버튼으로 변경
+                        const saveButton = document.createElement('button');
+                        saveButton.textContent = 'Save';
+                        saveButton.className = 'save-btn';
+                        saveButton.setAttribute('data-id', task.id);
+                        rightDiv.appendChild(saveButton);
+                    }
+
+                    // 'Delete' 버튼 생성 (항상 추가)
+                    const deleteButton = document.createElement('button');
+                    deleteButton.textContent = 'Delete';
+                    deleteButton.className = 'delete-btn';
+                    deleteButton.setAttribute('data-id', task.id);
+                    rightDiv.appendChild(deleteButton);
+
+                    // 오른쪽 영역을 li 요소에 추가
+                    li.appendChild(rightDiv);
+
+                    // 간단한 fade-in 애니메이션: 처음에 투명하게 시작하여 서서히 보이도록 조정
+                    li.style.opacity = 0;
+                    setTimeout(() => {
+                        li.style.opacity = 1;
+                    }, 10);
+
+                    // 최종적으로 생성된 li 요소를 할 일 목록(ul)에 추가
+                    taskListElement.appendChild(li);
+                });
+            }
+
+            /* -------------------------------------------------- */
+            /*              할 일 추가 함수 정의                */
+            /* -------------------------------------------------- */
+
+            /**
+             * 사용자가 할 일 등록 버튼을 클릭할 때 호출되는 함수입니다.
+             * 입력된 제목(및 날짜)을 기반으로 새로운 task 객체를 생성하고 tasks 배열에 추가합니다.
+             */
+            function handleAddTask() {
+                // 할 일 제목 입력 필드의 값을 가져와 좌우 공백 제거
+                const title = taskTitleInput.value.trim();
+                // 마감 날짜 입력 필드의 값을 가져옴
+                const dueDate = taskDateInput.value;
+
+                // 할 일 제목이 비어있으면 에러 메시지 표시 후 함수 종료
+                if (!title) {
+                    errorMessageDiv.textContent = '할 일 제목을 입력해주세요.';
+                    setTimeout(() => {
+                        errorMessageDiv.textContent = '';
+                    }, 3000);
+                    return;
+                }
+
+                // 새로운 task 객체 생성: 고유 id, 제목, 마감 날짜, 완료 상태, 편집 상태 저장
+                const newTask = {
+                    id: Date.now().toString(), // 고유 식별자를 위해 현재 타임스탬프 사용
+                    title: title,
+                    dueDate: dueDate || null,  // 날짜 입력이 없으면 null
+                    completed: false,          // 새로운 할 일은 기본적으로 미완료 상태
+                    isEditing: false           // 처음에는 편집 모드가 아님
+                };
+
+                // tasks 배열에 새로운 task를 추가
+                tasks.push(newTask);
+                // 변경된 tasks 배열을 localStorage에 저장
+                saveTasksToLocalStorage();
+                // 입력 필드 초기화
+                taskTitleInput.value = '';
+                taskDateInput.value = '';
+                // 할 일 목록을 다시 렌더링하여 새 task가 보이도록 함
+                renderTasks();
+            }
+
+            // 등록 버튼에 클릭 이벤트 리스너를 부여하여 handleAddTask 함수 호출
+            addTaskButton.addEventListener('click', handleAddTask);
+
+            /* -------------------------------------------------- */
+            /*     할 일 목록 내 이벤트 위임 (체크박스, 버튼)      */
+            /* -------------------------------------------------- */
+
+            /**
+             * 할 일 목록 영역에서 클릭 이벤트 위임을 통해
+             * 체크박스 터글, 편집 모드 전환, 저장, 삭제 이벤트를 처리합니다.
+             */
+            taskListElement.addEventListener('click', function (e) {
+                // 클릭한 요소에 data-id 속성이 있는지 확인 (각 task를 식별)
+                const taskId = e.target.getAttribute('data-id');
+                if (!taskId) return; // data-id가 없는 경우 아무 것도 하지 않음
+
+                // 1. 체크박스: task 완료 상태 토글
+                if (e.target.classList.contains('toggle-checkbox')) {
+                    tasks = tasks.map(task => {
+                        if (task.id === taskId) {
+                            return { ...task, completed: e.target.checked };
+                        }
+                        return task;
+                    });
+                    saveTasksToLocalStorage();
+                    renderTasks();
+                }
+
+                // 2. Edit 버튼: 해당 task를 편집 모드로 전환
+                if (e.target.classList.contains('edit-btn')) {
+                    tasks = tasks.map(task => {
+                        if (task.id === taskId) {
+                            return { ...task, isEditing: true };
+                        }
+                        return task;
+                    });
+                    renderTasks();
+                }
+
+                // 3. Save 버튼: 편집 모드에서 수정된 제목을 저장하고 편집 모드 해제
+                if (e.target.classList.contains('save-btn')) {
+                    // 가장 가까운 li 요소에서 편집 입력 필드를 찾음
+                    const parentLi = e.target.closest('li');
+                    const editInput = parentLi.querySelector('.edit-input');
+                    const updatedTitle = editInput.value.trim();
+                    // 제목이 비어 있으면 에러 처리
+                    if (!updatedTitle) {
+                        errorMessageDiv.textContent = '수정할 제목을 입력해주세요.';
+                        setTimeout(() => {
+                            errorMessageDiv.textContent = '';
+                        }, 3000);
+                        return;
+                    }
+                    tasks = tasks.map(task => {
+                        if (task.id === taskId) {
+                            return { ...task, title: updatedTitle, isEditing: false };
+                        }
+                        return task;
+                    });
+                    saveTasksToLocalStorage();
+                    renderTasks();
+                }
+
+                // 4. Delete 버튼: 해당 task를 tasks 배열에서 제거
+                if (e.target.classList.contains('delete-btn')) {
+                    tasks = tasks.filter(task => task.id !== taskId);
+                    saveTasksToLocalStorage();
+                    renderTasks();
+                }
+            });
+            
+            /* -------------------------------------------------- */
+            /*         필터 버튼 클릭 이벤트 처리               */
+            /* -------------------------------------------------- */
+
+            /**
+             * 각 필터 버튼에 클릭 이벤트를 부여하여
+             * 현재 필터(currentFilter)를 변경하고, 목록을 재렌더링합니다.
+             */
+            filterButtons.forEach(function (btn) {
+                btn.addEventListener('click', function () {
+                    // 모든 필터 버튼에서 'active' 클래스를 제거하고
+                    // 클릭한 버튼에만 'active' 클래스를 추가하여 시각적 상태 표시
+                    filterButtons.forEach(function (button) {
+                        button.classList.remove('active');
+                    });
+                    btn.classList.add('active');
+                    // 클릭한 버튼의 data-filter 속성 값을 현재 필터로 저장
+                    currentFilter = btn.getAttribute('data-filter');
+                    renderTasks();
+                });
+            });
+
+            // --------------------------------------------------
+            // 페이지가 로드될 때, 기존 데이터를 기반으로 할 일 목록을 렌더링
+            renderTasks();
+        });
+    </script>
+</body>
+
+</html>
