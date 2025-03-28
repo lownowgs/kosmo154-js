@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset='utf-8'>
+    <meta http-equiv='X-UA-Compatible' content='IE=edge'>
+    <title>Page Title</title>
+    <meta name='viewport' content='width=device-width, initial-scale=1'>
+    <link rel='stylesheet' type='text/css' media='screen' href='main.css'>
+    <style>
+        .box{
+            width: 100px;
+            height: 100px;
+            background-color: red;
+            margin: 100px auto;
+            
+        }
+
+
+    </style>
+</head>
+<body>
+
+    <div class="box">
+
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.7/dist/gsap.min.js"></script>
+    <!-- 그린속(?) CDN 가져오기-->
+    <script>
+        // gsap.to() : 요소를 움직일 애니메이션 위치를 지정. 즉 도달하고자 하는 state
+       gsap.from(".box",{
+        duration : 3,//애니메이션 시간은 3초
+        y : -100,//현재 위치의 y축 100부터 시작
+        opacity : 0, //처음 투명한 상태로 점점 갈수록 선명하게
+        ease : "power1.out", // 처음에는 빠르게 들어갔다가 점점 천천히
+
+       })
+    </script>
+
+</body>
+</html>

@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset='utf-8'>
+    <meta http-equiv='X-UA-Compatible' content='IE=edge'>
+    <title>Page Title</title>
+    <meta name='viewport' content='width=device-width, initial-scale=1'>
+    <link rel='stylesheet' type='text/css' media='screen' href='main.css'>
+    <style>
+        .box{
+            width: 100px;
+            height: 100px;
+            background-color: cornflowerblue;
+            margin: 100px auto;
+            
+        }
+
+
+    </style>
+</head>
+<body>
+
+    <div class="box">
+
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.7/dist/gsap.min.js"></script>
+    <!-- 그린속(?) CDN 가져오기-->
+    <script>
+        // gsap.to() : 요소를 움직일 애니메이션 위치를 지정. 즉 도달하고자 하는 state
+        gsap.to(".box",{
+            // to는 현재 상태 내가 움직이고 애니메이션 후 상태에서 to를 실행한다.
+            // from는 현재 상태 -> 애니메이션 전 상태 라면 애니메이션 전 상태 라는 곳에 추가
+            // fromto는 애니메이션의 전 후 모두에게 사용 
+            duration : 2, //애니메이션 시간 : 2초
+            x : 500, // 현재 위치에서 x축으로 500px 오른쪽 이동
+            rotation : 360, //요소를 360회전 
+            ease : "bounce.out" // bounce easing 효과 적용
+        })
+    </script>
+
+</body>
+</html>

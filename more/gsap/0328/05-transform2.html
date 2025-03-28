@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset='utf-8'>
+    <meta http-equiv='X-UA-Compatible' content='IE=edge'>
+    <title>Page Title</title>
+    <meta name='viewport' content='width=device-width, initial-scale=1'>
+    <link rel='stylesheet' type='text/css' media='screen' href='main.css'>
+    <script src='main.js'></script>
+</head>
+<body>
+    <style>
+        body{
+            background-color: #f9f9f9;
+            font-family: Arial, sans-serif;
+            text-align: center;
+            padding: 20px;
+        }
+        h1{
+            margin-bottom: 30px;
+        }
+
+        .demo-container{
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            justify-content: center;
+        }
+
+        .demo{
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            padding: 10px;
+            width: 220px;
+            background-color: white;
+        }
+
+        .demo h3{
+            margin: 0 0 10px 0;
+            font-size: 16px;
+            color:#2c3e50;
+
+        }
+
+        .box{
+            width: 100px;
+            height: 100px;
+            background-color: #3498db;
+            margin: 10px auto;
+            color: white;
+            font-size: 16px;
+            text-align: center;
+            font-weight: bold;
+            line-height: 100px;
+            border-radius: 5px;
+        }
+
+        /* #demo-3d .box{
+            perspective: 800px;
+        } */
+
+        .position-demo{
+            position: relative;
+            width: 120px;
+            height: 120px;
+            margin: 10px auto;
+            border: 1px dashed #bdc3c7;
+        }
+
+        .position-box{
+            position: absolute;
+            width: 80px;
+            height: 80px;
+            background-color: #e67e22;
+            left:20px;
+            top:0;
+            color: #fff;
+            font-size: 14px;
+            line-height: 80px;
+            border-radius: 5px;
+        }
+
+
+
+
+        button{
+            padding: 5px 10px;
+            border: none;
+            background-color: #3ecc71;
+            color: #fff;
+            font-size: 14px;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+
+        button:hover{
+            background-color: #27ae60;
+        }
+
+
+
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.7/dist/gsap.min.js"></script>
+    <h1>GSAP Transform 개발 예제</h1>
+    <div class="demo-container">
+        <div class="demo" id="demo-opacity">
+            <h3>1. opacity(투명도)</h3>
+            <div class="box">Opacity</div>
+            <button onclick="animateOpacity()">애니메이트</button>
+        </div>
+
+        <div class="demo" id="demo-width">
+            <h3>2. width (너비 변경)</h3>
+            <div class="box">width</div>
+            <button onclick="animateWidth()">애니메이트</button>
+        </div>
+
+        <div class="demo" id="demo-bgColor">
+            <h3>3. backgroundcolor(배경색 변경) </h3>
+            <div class="box" style="background-color: #e74c3c;">8G Color</div>
+            <button onclick="animatebgColor()">애니메이트</button>
+        </div>
+
+
+
+       
+
+        <div class="demo" id="demo-fontSize">
+            <h3>4. fontSize(텍스트 크기)</h3>
+            <div class="box" style="font-size:16px;">Text</div>
+            <button onclick="animateFontSize()">애니메이트</button>
+        </div>
+
+         <!-- 여기 다시 시작 대스요  -->
+
+        <div class="demo" id="demo-skew">
+            <h3>5. 기울이기(skew)</h3>
+            <div class="box">skew</div>
+            <button onclick="animateSkew()">애니메이트</button>
+        </div>
+
+        <div class="demo" id="demo-transformOrigin">
+            <h3>6. TransformOrigin변경 + 회전</h3>
+            <div class="box">origin</div>
+            <button onclick="animateTransformOrigin()">애니메이트</button>
+        </div>
+
+        <div class="demo" id="demo-3d">
+            <h3>7. 3D 효과 (rotationX, rotationY) </h3>
+            <div class="box">3D</div>
+            <button onclick="animate3D()">애니메이트</button>
+        </div>
+
+    </div>
+
+
+
+    <script>
+        // 리셋하는 함수
+        function resetBox(selector,initialProps){
+            gsap.set(selector,initialProps);
+        }
+
+        function animateOpacity(){
+            const selector = "#demo-opacity .box";
+            resetBox(selector,{opacity:0});
+            gsap.to(selector, {duration:1,opacity:1});
+        }
+
+
+        function animateWidth(){
+            const selector = "#demo-width .box";
+            resetBox(selector,{width:"100px"});
+            gsap.to(selector, {duration:1,width:"200px"})
+        }
+
+        function animatebgColor(){
+            const selector = "#demo-rotation .box";
+            resetBox(selector,{backgroundColor:"#e74c3c"});
+            gsap.to(selector,{duration:0,backgroundColor:"#2ecc71"});
+
+        }
+
+
+
+
+        function animateFontSize(){
+            const selector = "#demo-fontSize .box";
+            resetBox(selector,{fontSize:"16px"});
+            // Scale 속성을 이용해 1.5배 확대
+            gsap.to(selector, {duration:1,fontSize:"32px"});
+        }
+
+        // <!-- 여기 다시 시작 대스요  -->
+
+        function animateSkew(){
+            const selector = "#demo-skew .box";
+            resetBox(selector);
+            // skewX와 skewY 속성을 이용해 기울이기 효과
+            gsap.to(selector, {duration:1,skewX:30, skewY:20});
+            
+        }
+
+        function animateTransformOrigin(){
+            const selector = "#demo-transformOrigin .box";
+            resetBox(selector);
+            // 변환 기준점을 죄측 상단으로 설정하고 회전 효과 적용
+            gsap.set(selector, {transformOrigin: "0% 0%"});
+            gsap.to(selector, {duration:1,rotation:360});
+            
+        }
+
+        function animate3D(){
+            const selector = "#demo-3d .box";
+            resetBox(selector);
+            // 3D 효과로 rotationX와 rotaionY를 동시에 적용(prespective는 CSS에서 지정)
+            gsap.to(selector, {duration:1,rotationX:45,rotationY:45});
+            
+        }
+
+    </script>
+</body>
+</html>
