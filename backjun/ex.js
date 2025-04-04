@@ -38,22 +38,72 @@
 
 //const input = require("fs").readFileSync(0).toString().trim().split(" ");
 
+// const fs = require('fs');
+// const input = fs.readFileSync(
+// process.platform === "linux" ? "/dev/stdin" : "./input.txt"
+//  ).toString().trim().split("\n");
+// const a = parseInt(input[0]);
+// const b = parseInt(input[1]);
+// // const b = parseInt(input[1]);
+// // const c = parseInt(input[2]); 
+
+// let temp = 0;
+// for (let i = 2; i < 2+b; i++) {
+//     const [A,B] = input[i].split(" ").map(Number);
+//     temp += A*B;
+    
+// }
+// console.log((temp===a) ? "Yes": "No");
+
+// const fs = require('fs');
+// const input = fs.readFileSync(
+// process.platform === "linux" ? "/dev/stdin" : "./input.txt"
+//  ).toString().trim().split("\n");
+
+// const N = parseInt(input[0]); // 첫 번째 줄에서 N 값을 가져옴
+
+// for (let i = 1; i <= N; i++) {
+//     console.log('*'.repeat(i)); 
+// }
+
+
 const fs = require('fs');
 const input = fs.readFileSync(
-process.platform === "linux" ? "/dev/stdin" : "./input.txt"
- ).toString().trim().split("\n");
-const a = parseInt(input[0]);
-const b = parseInt(input[1]);
-// const b = parseInt(input[1]);
-// const c = parseInt(input[2]); 
+    process.platform === "linux" ? "/dev/stdin" : "./input.txt"
+).toString().trim().split("\n");
 
-let temp = 0;
-for (let i = 2; i < 2+b; i++) {
-    const [A,B] = input[i].split(" ").map(Number);
-    temp += A*B;
-    
+
+const n = parseInt(input[0]); // 첫 번째 줄: 정수 n
+const l = input[1].split(" ").map(Number); // 두 번째 줄: 정수 배열
+const v = parseInt(input[2]); // 세 번째 줄: 찾을 값 v
+
+let c = 0;
+for (let i of l) {
+    if (i === v) {
+        c += 1;
+    }
 }
-console.log((temp===a) ? "Yes": "No");
+console.log(c);
+
+
+// for (let i = 0; i < input.length; i++) {
+//     const [A, B] = input[i].split(' ').map(Number);
+//     if (A === 0 && B === 0) break;
+//     console.log(A + B);
+// }
+
+// const N = parseInt(input[0]);
+
+// for (let i = 1; i <= N; i++) {
+//     let spaces = ' '.repeat(N - i); // 공백 추가
+//     let stars = '*'.repeat(i); // 별 추가
+//     console.log(spaces + stars); // 공백 + 별 출력
+// }
+// for (let i = 1; i <= a; i++) {
+//     const [A, B] = input[i].split(" ").map(Number); // A, B를 숫자로 변환
+//     console.log("Case #"+i+":"+" " +A+" + "+B+" = " + (A + B));
+// }
+
 
 // const result = (temp===a) ? "Yes": "No";
 // console.log(result);
